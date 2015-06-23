@@ -17,12 +17,21 @@
   <div id="app-container"></div>
 
   <script type="text/jsx">
+    var path = require("path");
     var App = React.createClass({
       getInitialState: function() {
         var userHomeFolder = process.env[(process.platform == "win32") ? "USERPROFILE" : "HOME"];
         return {
+          filterKeyword: null,
           currentFolder: userHomeFolder
         }
+      },
+      handleGoUp: function() {
+        React.findDOMNode(this.refs.filter).value = "";
+        this.setState({
+          filterKeyword: null,
+          currentFolder: path.join(this.state.currentFolder, "..")
+        });
       },
       handleSelectCurrentFolder: function() {
         var remote = require("remote"),
@@ -36,12 +45,21 @@
           },
           function(pathnames) {
             if (pathnames[0]) {
+              React.findDOMNode(this.refs.filter).value = "";
               this.setState({
                 currentFolder: pathnames[0]
               });
             }
           }.bind(this)
         )
+      },
+      handleUpdateFilter: function() {
+        var filterKeyword = React.findDOMNode(this.refs.filter).value;
+        if (filterKeyword) {
+          this.setState({
+            filterKeyword: filterKeyword.toLowerCase()
+          });
+        }
       },
       handleOpenFile: function(abspath) {
         var open = require("open");
@@ -52,13 +70,18 @@
         });
       },
       render: function() {
-        var fs = require("fs"),
-            path = require("path");
+        var fs = require("fs");
         var basenames = fs.readdirSync(this.state.currentFolder);
+        if (this.state.filterKeyword) {
+          basenames = basenames.filter(function(basename) {
+            return basename.toLowerCase().indexOf(this.state.filterKeyword) != -1;
+          }.bind(this));
+        }
         return (
           <div>
             <p><button onClick={this.handleSelectCurrentFolder}>Select Folder</button></p>
             <p>Current Folder: <strong>{this.state.currentFolder}</strong></p>
+            <p>Filter: <input type="text" length="40" onChange={this.handleUpdateFilter} ref="filter"/></p>
             <table>
               <thead>
                 <tr>
@@ -68,6 +91,11 @@
                 </tr>
               </thead>
               <tbody>
+                <tr>
+                  <td><a href="javascript:" onClick={this.handleGoUp}>../</a></td>
+                  <td></td>
+                  <td></td>
+                </tr>
               {basenames.map(function(basename) {
                 var abspath = path.join(this.state.currentFolder, basename);
                 var fileStat = fs.statSync(abspath);
