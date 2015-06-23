@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Call Python</title>
+  <script src="https://fb.me/react-with-addons-0.13.3.js"></script>
+  <script src="https://fb.me/JSXTransformer-0.13.3.js"></script>
+</head>
+<body>
+  <h1>Call Python</h1>
+  <div id="app-container"></div>
+
+  <script type="text/jsx">
+    var App = React.createClass({
+      getInitialState: function() {
+        return {
+          pythonStdout: []
+        };
+      },
+      componentDidMount: function() {
+        var ipc = require("ipc");
+        ipc.on("python-stdout", function(props) {
+          this.setState(React.addons.update(this.state, {
+            pythonStdout: {
+              $push: [props.stdout]
+            }
+          }));
+        }.bind(this));
+        ipc.send("call-python");
+      },
+      render: function() {
+        return (
+          <div>
+            <ul>
+              {this.state.pythonStdout.map(function(item) {
+                return (<li>{item}</li>);
+              })}
+            </ul>
+          </div>
+        );
+      }
+    })
+    React.render(<App/>, document.getElementById("app-container"));
+  </script>
+</body>
+</html>

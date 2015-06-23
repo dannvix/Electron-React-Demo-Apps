@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Filesystem Explorer</title>
+  <base target="_blank">
+  <script src="https://fb.me/react-0.13.3.js"></script>
+  <script src="https://fb.me/JSXTransformer-0.13.3.js"></script>
+  <style>
+    th, td {
+      border: 1px solid hsl(0, 0%, 90%);
+    }
+  </style>
+</head>
+<body>
+  <h1>Filesystem Explorer</h1>
+  <div id="app-container"></div>
+
+  <script type="text/jsx">
+    var App = React.createClass({
+      getInitialState: function() {
+        var userHomeFolder = process.env[(process.platform == "win32") ? "USERPROFILE" : "HOME"];
+        return {
+          currentFolder: userHomeFolder
+        }
+      },
+      handleSelectCurrentFolder: function() {
+        var remote = require("remote"),
+            dialog = remote.require("dialog"),
+            currentWindow = remote.getCurrentWindow();
+        dialog.showOpenDialog(
+          currentWindow,
+          {
+            title: "Navigate to folder",
+            properties: ["openDirectory", "createDirectory"]
+          },
+          function(pathnames) {
+            if (pathnames[0]) {
+              this.setState({
+                currentFolder: pathnames[0]
+              });
+            }
+          }.bind(this)
+        )
+      },
+      handleOpenFile: function(abspath) {
+        var open = require("open");
+        open(abspath, function(error) {
+          if (error) {
+            console.error(error);
+          }
+        });
+      },
+      render: function() {
+        var fs = require("fs"),
+            path = require("path");
+        var basenames = fs.readdirSync(this.state.currentFolder);
+        return (
+          <div>
+            <p><button onClick={this.handleSelectCurrentFolder}>Select Folder</button></p>
+            <p>Current Folder: <strong>{this.state.currentFolder}</strong></p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Basename</th>
+                  <th>Type</th>
+                  <th>Size (byte)</th>
+                </tr>
+              </thead>
+              <tbody>
+              {basenames.map(function(basename) {
+                var abspath = path.join(this.state.currentFolder, basename);
+                var fileStat = fs.statSync(abspath);
+                if (fileStat.isDirectory()) {
+                  var displayName = basename + "/",
+                      openHandler = this.setState.bind(this, {currentFolder: abspath});
+                }
+                else {
+                  var displayName = basename,
+                      openHandler = this.handleOpenFile.bind(this, abspath);
+                }
+                return (
+                  <tr>
+                    <td><a href="javascript:" onClick={openHandler}>{displayName}</a></td>
+                    <td>{fileStat.isDirectory() ? "Directory" : "File"}</td>
+                    <td>{fileStat.size}</td>
+                  </tr>
+                );
+              }.bind(this))}
+              </tbody>
+            </table>
+          </div>
+        );
+      }
+    })
+    React.render(<App/>, document.getElementById("app-container"));
+  </script>
+</body>
+</html>

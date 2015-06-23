@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>First Electron-React App</title>
+  <script src="https://fb.me/react-0.13.3.js"></script>
+  <script src="https://fb.me/JSXTransformer-0.13.3.js"></script>
+  <style>
+    html {
+      width: 100%;
+      height: 100%;
+      -webkit-user-select: none;
+      -webkit-app-region: drag;
+    }
+    button {
+      -webkit-app-region: no-drag; /*must*/
+    }
+  </style>
+</head>
+<body>
+  <h1>Frameless App</h1>
+  <h3>Drag anywhere to move window</h3>
+  <div id="app-container"></div>
+
+  <script type="text/jsx">
+    var App = React.createClass({
+      handleToggleDevTools: function() {
+        require("remote").getCurrentWindow().toggleDevTools();
+      },
+      handleCloseWindow: function() {
+        var remote = require("remote"),
+            currentWindow = remote.getCurrentWindow();
+        // GUI-related API must be called fron main process
+        remote.require("dialog").showMessageBox(
+          currentWindow,
+          {
+            type: "warning",
+            title: "Confirm close...",
+            message: "Do you really want to close this window?",
+            buttons: ["Yes", "No"]
+          },
+          function(response) {
+            // response is button index
+            if (response == 0) {
+              currentWindow.close();
+            }
+          }
+        );
+      },
+      render: function() {
+        return (
+          <div>
+            <p><button onClick={this.handleToggleDevTools}>Toggle DevTools</button></p>
+            <p><button onClick={this.handleCloseWindow}>Close Window</button></p>
+          </div>
+        );
+      }
+    });
+    React.render(<App/>, document.getElementById("app-container"));
+  </script>
+</body>
+</html>
