@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dual BrowserWindow</title>
+  <base target="_blank">
+  <script src="https://fb.me/react-with-addons-0.13.3.js"></script>
+  <script src="https://fb.me/JSXTransformer-0.13.3.js"></script>
+</head>
+<body>
+  <h1>Dual BrowserWindow</h1>
+  <div id="app-container"></div>
+
+  <script type="text/jsx">
+    var ipc = require("ipc");
+    var App = React.createClass({
+      getInitialState: function() {
+        return {
+          data: []
+        };
+      },
+      componentDidMount: function() {
+        ipc.on("broadcast", function(data) {
+          var datetime = (new Date()).toString();
+          this.setState(React.addons.update(this.state, {
+            data: {
+              $push: [datetime + " - " + data]
+            }
+          }));
+        }.bind(this));
+      },
+      handleSendBroadcast: function() {
+        var message = React.findDOMNode(this.refs.message).value;
+        if (message) {
+          console.log("broadcasting " + message);
+          ipc.send("broadcast", {
+            message: message
+          });
+        }
+      },
+      render: function() {
+        return (
+          <div>
+            <div>
+              Broadcast Message: <input type="text" ref="message"/>&nbsp;
+              <button onClick={this.handleSendBroadcast}>Send</button>
+            </div>
+            <ul>
+              {this.state.data.map(function(d) {
+                return (<li>{d}</li>);
+              })}
+            </ul>
+          </div>
+        );
+      }
+    });
+    React.render(<App/>, document.getElementById("app-container"));
+  </script
+</body>
+</html>
