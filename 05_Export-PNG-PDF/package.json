@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "main": "main.js",
   "dependencies": {
-    "open": "0.0.5",
     "promise": "^7.0.1"
   }
 }

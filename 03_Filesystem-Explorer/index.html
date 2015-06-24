@@ -62,12 +62,8 @@
         }
       },
       handleOpenFile: function(abspath) {
-        var open = require("open");
-        open(abspath, function(error) {
-          if (error) {
-            console.error(error);
-          }
-        });
+        var shell = require("shell");
+        shell.openItem(abspath);
       },
       render: function() {
         var fs = require("fs");
