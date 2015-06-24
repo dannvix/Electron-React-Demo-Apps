@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Zooming</title>
+  <base target="_blank">
+  <script src="https://fb.me/react-0.13.3.js"></script>
+  <script src="https://fb.me/JSXTransformer-0.13.3.js"></script>
+</head>
+<body>
+  <h1>Zooming</h1>
+  <div id="app-container"></div>
+
+  <script type="text/jsx">
+    (function enableZoomingHotKeysAndMouseWheel() {
+      var webFrame = require("web-frame"),
+          currentZoomFactor = 1.0;
+      window.addEventListener("keyup", function(e) {
+        if (e.ctrlKey) {
+          switch (e.keyCode) {
+          case 187/*=*/:
+            currentZoomFactor += 0.1;
+            break;
+          case 189/*-*/:
+            currentZoomFactor -= 0.1;
+            break;
+          case  48/*0*/:
+            currentZoomFactor = 1.0;
+            break;
+          };
+          webFrame.setZoomFactor(currentZoomFactor);
+        }
+      }, false);
+      window.addEventListener("mousewheel", function(e) {
+        if (e.ctrlKey) {
+          currentZoomFactor += (e.wheelDelta > 0) ? (0.1) : (-0.1);
+          webFrame.setZoomFactor(currentZoomFactor);
+        }
+      }, false);
+    })();
+
+    var App = React.createClass({
+      render: function() {
+        return (
+          <ul>
+            <li><a href="https://github.com/atom/electron">Electon</a> v{process.versions["electron"]}</li>
+            <li><a href="https://www.chromium.org">Chromium</a> v{process.versions["chrome"]}</li>
+            <li><a href="https://github.com/nodejs/io.js">io.js</a> {process.version}</li>
+            <li><a href="https://github.com/facebook/react">React</a> v{React.version}</li>
+          </ul>
+        );
+      }
+    });
+    React.render(<App/>, document.getElementById("app-container"));
+  </script>
+</body>
+</html>
