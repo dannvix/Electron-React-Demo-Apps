@@ -1,6 +1,10 @@
 var app = require("app"),
     BrowserWindow = require("browser-window");
 
+// Chromium command-switches for Linux
+// app.commandLine.appendSwitch("enable-transparent-visuals", 1);
+// app.commandLine.appendSwitch("disable-gpu", 1);
+
 app.on("window-all-closed", function() {
     app.quit();
 })
